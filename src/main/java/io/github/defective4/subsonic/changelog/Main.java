@@ -109,7 +109,7 @@ public class Main {
                 Transport.send(msg);
             }
 
-//            db.storeList(diffAE);
+            db.storeList(diffAE);
         } catch (Exception e) {
             e.printStackTrace();
         }
