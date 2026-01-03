@@ -52,6 +52,8 @@ public class Main {
             List<Album> diffA = diffAE.stream()
                     .map(e -> allAlbums.stream().filter(e2 -> e2.getId().equals(e.getId())).findAny().get()).toList();
 
+            if(diffA.isEmpty()) return;
+
             Map<String, FriendlyAlbum> albumMap = new HashMap<>();
             for (Album a : diffA) {
                 if (!albumMap.containsKey(a.getTitle())) {
