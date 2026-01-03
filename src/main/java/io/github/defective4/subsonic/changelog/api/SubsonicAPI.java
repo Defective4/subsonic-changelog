@@ -1,6 +1,8 @@
 package io.github.defective4.subsonic.changelog.api;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
@@ -15,6 +17,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.imageio.ImageIO;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
@@ -45,7 +49,7 @@ public class SubsonicAPI {
         List<Album> albums = new ArrayList<>();
         int offset = 0;
         while (true) {
-            try (Reader reader = openStream("getAlbumList", Map.of("type", "newest", "size", 500, "offset", offset))) {
+            try (Reader reader = openReader("getAlbumList", Map.of("type", "newest", "size", 500, "offset", offset))) {
                 List<Album> list = readResponse(reader).getAlbumList().getAlbum();
                 if (list == null || list.isEmpty()) break;
                 offset += 500;
@@ -55,13 +59,23 @@ public class SubsonicAPI {
         return Collections.unmodifiableList(albums);
     }
 
+    public BufferedImage getCoverArt(String id, int size) throws IOException {
+        try (InputStream in = openStream("getCoverArt", Map.of("id", id, "size", size))) {
+            return ImageIO.read(in);
+        }
+    }
+
     public List<Song> getSongs(Album album) throws IOException {
-        try (Reader reader = openStream("getMusicDirectory", Map.of("id", album.getId()))) {
+        try (Reader reader = openReader("getMusicDirectory", Map.of("id", album.getId()))) {
             return readResponse(reader).getDirectory().getChild();
         }
     }
 
-    private Reader openStream(String path, Map<String, Object> params) throws IOException {
+    private Reader openReader(String path, Map<String, Object> params) throws IOException {
+        return new InputStreamReader(openStream(path, params));
+    }
+
+    private InputStream openStream(String path, Map<String, Object> params) throws IOException {
         regenerateToken();
         List<String> pms = new ArrayList<>();
         for (Entry<String, Object> entry : params.entrySet()) {
@@ -71,7 +85,7 @@ public class SubsonicAPI {
                 .create(String.format(baseURL + path + "?u=%s&t=%s&s=%s&v=%s&c=CHANGELOG&f=json%s", ue(user), token,
                         salt, "1.16.1", pms.isEmpty() ? "" : "&" + String.join("&", pms.toArray(new String[0]))))
                 .toURL();
-        return new InputStreamReader(url.openStream(), StandardCharsets.UTF_8);
+        return url.openStream();
     }
 
     private SubsonicResponse readResponse(Reader reader) {
