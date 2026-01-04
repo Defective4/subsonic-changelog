@@ -48,13 +48,10 @@ public class SubsonicAPI {
     public List<Album> getAlbums() throws IOException {
         List<Album> albums = new ArrayList<>();
         int offset = 0;
-        while (true) {
-            try (Reader reader = openReader("getAlbumList", Map.of("type", "newest", "size", 500, "offset", offset))) {
-                List<Album> list = readResponse(reader).getAlbumList().getAlbum();
-                if (list == null || list.isEmpty()) break;
-                offset += 500;
-                albums.addAll(list);
-            }
+        try (Reader reader = openReader("getAlbumList", Map.of("type", "newest", "size", 50))) {
+            List<Album> list = readResponse(reader).getAlbumList().getAlbum();
+            if(lits!=null)
+            albums.addAll(list);
         }
         return Collections.unmodifiableList(albums);
     }
