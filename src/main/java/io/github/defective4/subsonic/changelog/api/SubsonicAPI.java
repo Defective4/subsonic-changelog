@@ -50,7 +50,7 @@ public class SubsonicAPI {
         int offset = 0;
         try (Reader reader = openReader("getAlbumList", Map.of("type", "newest", "size", 50))) {
             List<Album> list = readResponse(reader).getAlbumList().getAlbum();
-            if(lits!=null)
+            if(list!=null)
             albums.addAll(list);
         }
         return Collections.unmodifiableList(albums);
